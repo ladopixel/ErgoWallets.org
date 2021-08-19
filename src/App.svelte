@@ -51,6 +51,7 @@
 			infoWallet.ergos = (data.nanoErgs/1000000000).toFixed(2)
 			arrayWallets = [...arrayWallets, infoWallet]
 			infoWallet = {id: '', name: '', address: '', ergos: ''}
+			loadWallet()
 		}else {
 			alert('Wallet incorrect!')
 		}
@@ -174,7 +175,7 @@
 					</li>
 				</ul>
 				<input bind:value={valorWallet} class="form-control me-2" type="search" placeholder="Your wallet" aria-label="Your wallet">
-				<button on:click={loadWallet} class="btn btn-outline-info" type="submit"> Accept</button>
+				<button on:click={loadWallet} class="separaI btn btn-outline-info" type="submit"> Accept</button>
 			</div>
 		</div>
 	</nav>
@@ -322,6 +323,11 @@
 	@media (min-width: 640px) {
 		main {
 			max-width: none;
+		}
+	}
+	@media only screen and (max-width: 768px) {
+		.separaI{
+			margin-top: 5px;;
 		}
 	}
 </style>
