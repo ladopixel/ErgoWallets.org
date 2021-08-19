@@ -11,6 +11,8 @@
 	let objetoToken = {}
 	let arrayTokens = []
 
+	let totalErgos = 0
+
 	const loadCoin = async() => {
 		const res = await fetch(`https://api.ergoplatform.com/api/v0/info`)
 		const data = await res.json()
@@ -46,8 +48,9 @@
 			infoWallet.id = Date.now()
 			infoWallet.address = valorWallet
 			infoWallet.name = nameWallet
+			infoWallet.ergos = (data.nanoErgs/1000000000).toFixed(2)
 			arrayWallets = [...arrayWallets, infoWallet]
-			infoWallet = {id: '', name: '', address: ''}
+			infoWallet = {id: '', name: '', address: '', ergos: ''}
 		}else {
 			alert('Wallet incorrect!')
 		}
@@ -55,8 +58,6 @@
 
 	// Load wallet
 	const loadWallet = async() => {
-		// Si la consulta devuelve ok 200 es verdadera
-		//const res = await fetch(`https://api.ergoplatform.com/api/v1/addresses/${valorWallet}/balance/total`)
 		const res = await fetch(`https://api.ergoplatform.com/api/v1/addresses/${valorWallet}/balance/confirmed`)
 		const data = await res.json()
 		if (res.ok){
@@ -78,7 +79,8 @@
 						objetoToken = {
 							tokenCreationHeightConf: data2[0].creationHeight,
 							tokenTokenIdConf: data2[0].assets[0].tokenId,
-							tokenAmountConf: data2[0].assets[0].amount,
+							tokenAmountConf: data.tokens[i].amount,
+							tokenAmountConfEmit: data2[0].assets[0].amount,
 							tokenNameConf: data2[0].assets[0].name,
 							tokenDecimalsConf: data2[0].assets[0].decimals,
 							tokenTypeConf: data2[0].assets[0].type,
@@ -97,8 +99,6 @@
 		}else {
 			alert('Wallet incorrect!')
 		}
-		
-		// Objeto datos sin confirmar
 	}
 
 	// Clean wallets
@@ -123,6 +123,16 @@
 		return str;
 	}
 
+	
+		function sumarErgos() {
+			totalErgos = 0
+			for (let i=0; i < arrayWallets.length; i++){
+				totalErgos = totalErgos + parseFloat(arrayWallets[i].ergos)
+			}
+		}
+		
+		sumarErgos()
+
 	// Transactions
 	//const res = await fetch(`https://api.ergoplatform.com/api/v1/addresses/${valorWallet}/transactions`)
 	
@@ -143,14 +153,18 @@
 		  	</button>
 			<div class="collapse navbar-collapse" id="navbarSupportedContent">
 				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-					<li class="nav-item dropdown ">
-						<a class="nav-link dropdown-toggle text-secondary" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+					<li class="nav-item dropdown">
+						<a on:click={sumarErgos} class="nav-link dropdown-toggle text-secondary" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 						<span class="text-secondary">Your Wallets</span>
 						</a>
 						<ul class="dropdown-menu bg-light border border-secondary" aria-labelledby="navbarDropdown">
 							{#each arrayWallets as wallet}
-								<li><a on:click={muestroWallet(wallet.address)} class="dropdown-item text-dark small" href="#">{wallet.name}</a></li>
+								<li><a on:click={muestroWallet(wallet.address)} class="dropdown-item text-dark small" href="#">{wallet.name}<i class="bi bi-arrow-right-short"></i>{wallet.ergos}</a> </li>
 							{/each}
+							<li><hr class="dropdown-divider text-danger"></li>
+
+							<li><a class="dropdown-item text-dark small disabled" href="#">{(totalErgos).toFixed(2)} Σ</a></li>
+							
 							<li><hr class="dropdown-divider text-info"></li>
 							<li><a class="dropdown-item text-dark small" href="#" data-bs-toggle="modal" data-bs-target="#addWalletModal">Add wallet</a></li>
 							<li><a class="dropdown-item text-dark small" href="#" data-bs-toggle="modal" data-bs-target="#deleteWalletModal">Delete wallet</a></li>
@@ -168,7 +182,7 @@
 	<!-- Info Ergo -->
 	<ul class="list-group mt-3 bg-dark" id="grupoInfo">
     	<li class="list-group-item bg-dark border-light">
-			<span class="small text-secondary"><strong>Price: </strong><span class="small text-light">{ObjetoInfoErgo.EurErgo}€ <i class="bi bi-arrow-right-short"></i> ${ObjetoInfoErgo.UsdErgo} </span>  <strong>Circulating supply: </strong><span class="small text-light">{ObjetoInfoErgo.totalCoinsErgo}</span> <strong>Transactions per Day: </strong><span class="small text-light">{ObjetoInfoErgo.transactionsErgo}</span>  <strong>Hashrate: </strong><span class="small text-light">{(ObjetoInfoErgo.hashRateErgo/1000000000000).toFixed(2)} TH/s</span></span>
+			<span class="small text-info">Σ {(totalErgos).toFixed(2)} </span><i class="bi bi-handbag-fill"></i><span class="small text-secondary"><strong>Price: </strong><span class="small text-light">{ObjetoInfoErgo.EurErgo}€ <i class="bi bi-arrow-right-short"></i> ${ObjetoInfoErgo.UsdErgo} </span>  <strong>Circulating supply: </strong><span class="small text-light">{ObjetoInfoErgo.totalCoinsErgo}</span> <strong>Transactions per Day: </strong><span class="small text-light">{ObjetoInfoErgo.transactionsErgo}</span>  <strong>Hashrate: </strong><span class="small text-light">{(ObjetoInfoErgo.hashRateErgo/1000000000000).toFixed(2)} TH/s</span></span>
         </li>
 	</ul>
 	<!-- Fin info Ergo-->
@@ -188,8 +202,8 @@
 				<span id="tokens">{objetoAddress.numberTokensConf}</span>
 				<ul class="list-group mt-2 small">
 					{#await loadWallet}
-						<span>Loading...</span>
-					{:then loadWallet}
+						<span class="text-light">Loading...</span>
+					{:then}
 						{#each arrayTokens as datos}
 							<li class="list-group-item bg-light">
 							{#if (datos.tokenR9Conf)}
@@ -206,7 +220,7 @@
 							{/if}
 							<span><strong>Name: </strong>{datos.tokenNameConf}</span>
 							<br>
-							<span><strong>Amount: </strong>{datos.tokenAmountConf}</span> 
+							<span><strong>Amount: </strong>{datos.tokenAmountConf} of {datos.tokenAmountConfEmit}</span> 
 							<span><strong>Decimals: </strong>{datos.tokenDecimalsConf}</span>
 							<span><strong>Type: </strong>{datos.tokenTypeConf}</span>
 							<br>
@@ -216,8 +230,6 @@
 							
 							</li>
 						{/each}
-					{:catch error}
-						<p class="text-secondary">Something went wrong: {error.message}</p>
 					{/await}
 				</ul>
 			{:else}
