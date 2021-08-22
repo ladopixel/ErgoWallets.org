@@ -126,6 +126,18 @@
 
 	
 		function sumarErgos() {
+			if (localStorage.getItem("arrayWallets")){
+				arrayWallets = JSON.parse(localStorage.getItem("arrayWallets"))
+			}
+			for(let i=0; i < arrayWallets.length; i++){
+				fetch(`https://api.ergoplatform.com/api/v1/addresses/${arrayWallets[i].address}/balance/confirmed`)
+					.then(response => response.json())
+        			.then(consulta => {
+						arrayWallets[i].ergos = (consulta.nanoErgs/1000000000).toFixed(2)
+      			})
+      			.catch(error => console.error(error))
+			}
+			
 			totalErgos = 0
 			for (let i=0; i < arrayWallets.length; i++){
 				totalErgos = totalErgos + parseFloat(arrayWallets[i].ergos)
@@ -165,7 +177,7 @@
 							<li><hr class="dropdown-divider text-danger"></li>
 
 							<li><a class="dropdown-item text-dark small disabled" href="#">{(totalErgos).toFixed(2)} Σ</a></li>
-							
+
 							<li><hr class="dropdown-divider text-info"></li>
 							<li><a class="dropdown-item text-dark small" href="#" data-bs-toggle="modal" data-bs-target="#addWalletModal">Add wallet</a></li>
 							<li><a class="dropdown-item text-dark small" href="#" data-bs-toggle="modal" data-bs-target="#deleteWalletModal">Delete wallet</a></li>
