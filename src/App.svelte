@@ -1,7 +1,5 @@
 <script>
-
 	import Footer from './footer.svelte'
-
 	let ObjetoInfoErgo = {}
 	let infoWallet = {id: '', name: '', address: ''}
 	let arrayWallets = []
@@ -10,9 +8,7 @@
 	let objetoAddress = {}
 	let objetoToken = {}
 	let arrayTokens = []
-
 	let totalErgos = 0
-
 	const loadCoin = async() => {
 		const res = await fetch(`https://api.ergoplatform.com/api/v0/info`)
 		const data = await res.json()
@@ -29,16 +25,12 @@
 			ObjetoInfoErgo.EurErgo = data2.data.price_eur
 			ObjetoInfoErgo.UsdErgo = data2.data.price_usd
 		}
-
 	}
-
 	loadCoin()
-
 	if (localStorage.getItem("arrayWallets")){
 		arrayWallets = JSON.parse(localStorage.getItem("arrayWallets"))
 	}
 	$: localStorage.setItem("arrayWallets", JSON.stringify(arrayWallets))
-
 	// Add wallets
 	const addWallet = async() => {
 		// Si la consulta devuelve ok 200 es verdadera
@@ -56,7 +48,6 @@
 			alert('Wallet incorrect!')
 		}
 	}
-
 	// Load wallet
 	const loadWallet = async() => {
 		const res = await fetch(`https://api.ergoplatform.com/api/v1/addresses/${valorWallet}/balance/confirmed`)
@@ -67,7 +58,6 @@
 				nanoErgsConf: data.nanoErgs,
 				numberTokensConf: data.tokens.length,
 			}
-
 			// Si hay tokens confirmados
 			if (data.tokens.length){
 			 	arrayTokens = []
@@ -88,7 +78,7 @@
 							tokenR5Conf: toUtf8String(data2[0].additionalRegisters.R5).substr(2),
 							tokenR6Conf: data2[0].additionalRegisters.R6,
 							tokenR8Conf: data2[0].additionalRegisters.R8,
-							tokenR9Conf: toUtf8String(data2[0].additionalRegisters.R9).substr(2),
+							tokenR9Conf: resolveIpfs(toUtf8String(data2[0].additionalRegisters.R9).substr(2)),
 							tokenTransactionConf: 'https://explorer.ergoplatform.com/en/transactions/' + data2[0].spentTransactionId
 						}
 					}
@@ -101,18 +91,15 @@
 			alert('Wallet incorrect!')
 		}
 	}
-
 	// Clean wallets
 	const cleanLocalStorage = () => {
 		localStorage.clear()
 		window.location.href = 'https://ergowallets.org'
 	}
-
 	const muestroWallet = (wallet) => {
 		valorWallet = wallet
 		loadWallet()
 	}
-
 	function toUtf8String(hex) {
 		if(!hex){
 			hex = ''
@@ -123,7 +110,6 @@
 		}
 		return str;
 	}
-
 	
 		function sumarErgos() {
 			if (localStorage.getItem("arrayWallets")){
@@ -143,9 +129,14 @@
 				totalErgos = totalErgos + parseFloat(arrayWallets[i].ergos)
 			}
 		}
+
+		function resolveIpfs(url) {
+			const ipfsPrefix = 'ipfs://'
+			if (!url.startsWith(ipfsPrefix)) return url
+			else return url.replace(ipfsPrefix, 'https://cloudflare-ipfs.com/ipfs/')
+		}
 		
 		sumarErgos()
-
 	// Transactions
 	//const res = await fetch(`https://api.ergoplatform.com/api/v1/addresses/${valorWallet}/transactions`)
 	
@@ -331,7 +322,6 @@
 
 <style>
 	
-
 	@media (min-width: 640px) {
 		main {
 			max-width: none;
