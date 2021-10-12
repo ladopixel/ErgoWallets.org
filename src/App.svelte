@@ -1,5 +1,7 @@
 <script>
 	import Footer from './footer.svelte'
+	import {location, querystring} from 'svelte-spa-router'
+
 	let ObjetoInfoErgo = {}
 	let infoWallet = {id: '', name: '', address: ''}
 	let arrayWallets = []
@@ -9,6 +11,7 @@
 	let objetoToken = {}
 	let arrayTokens = []
 	let totalErgos = 0
+	let valorIdWallet = ''
 	const loadCoin = async() => {
 		const res = await fetch(`https://api.ergoplatform.com/api/v0/info`)
 		const data = await res.json()
@@ -100,6 +103,17 @@
 		valorWallet = wallet
 		loadWallet()
 	}
+
+	// Rescatar valor y mostrar token desde URL
+	valorIdWallet = JSON.stringify($querystring)
+	if (valorIdWallet.substring(1, 7) == 'wallet'){
+		valorIdWallet = valorIdWallet.substring(8, valorIdWallet.length - 1)
+		muestroWallet(valorIdWallet)
+		
+	}
+	 
+	/////
+
 	function toUtf8String(hex) {
 		if(!hex){
 			hex = ''
