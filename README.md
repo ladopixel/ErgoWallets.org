@@ -7,6 +7,7 @@ Website to view information on wallets created for Ergo blockchain.
 
 Ergowallets.org is used to list wallets:
 
+- Details of a specific wallet >> <a href="https://ergowallets.org/#/?wallet=youWallet">https://ergowallets.org/#/?wallet=youWallet</a>
 - Add unlimited wallets as favorites so you don't have to type them anymore.
 - Quickly visualize the amount of Ergos available in each wallet.
 - All tokens of an address.
