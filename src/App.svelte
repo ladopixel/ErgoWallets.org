@@ -12,6 +12,7 @@
 	let arrayTokens = []
 	let totalErgos = 0
 	let valorIdWallet = ''
+	let claseNoImage = ' border border-secondary'
 	const loadCoin = async() => {
 		const res = await fetch(`https://api.ergoplatform.com/api/v0/info`)
 		const data = await res.json()
@@ -80,6 +81,7 @@
 							tokenTypeConf: data2[0].assets[0].type,
 							tokenR5Conf: toUtf8String(data2[0].additionalRegisters.R5).substr(2),
 							tokenR6Conf: data2[0].additionalRegisters.R6,
+							tokenR7Conf: data2[0].additionalRegisters.R7,
 							tokenR8Conf: data2[0].additionalRegisters.R8,
 							tokenR9Conf: resolveIpfs(toUtf8String(data2[0].additionalRegisters.R9).substr(2)),
 							tokenTransactionConf: 'https://explorer.ergoplatform.com/en/transactions/' + data2[0].spentTransactionId
@@ -217,41 +219,87 @@
 		<li class="list-group-item bg-secondary text-secondary">
 			<span class="text-light small"><strong>Tokens </strong></span>
 			{#if (objetoAddress.numberTokensConf)}
-				<span id="tokens">{objetoAddress.numberTokensConf}</span>
-				<ul class="list-group mt-2 small">
+				<span class="text-light small" id="tokens">{objetoAddress.numberTokensConf}</span>
 					{#await loadWallet}
 						<span class="text-light">Loading...</span>
 					{:then}
 						{#each arrayTokens as datos}
-							<li class="list-group-item bg-light">
-							{#if (datos.tokenR9Conf)}
-								<img class="img-thumbnail my-2" width=100 src={datos.tokenR9Conf} alt={datos.name}>
-								<br>
-							{/if}
-							<span><strong>Creation Height: </strong>{datos.tokenCreationHeightConf}</span>
-							<br>
-							<span class="text-break"><strong>Id:</strong> {datos.tokenTokenIdConf}</span>
-							<br>
-							{#if (datos.tokenR8Conf)}
-								<span class="text-break"><strong>Sha256: </strong>{datos.tokenR8Conf}</span>
-								<br>
-							{/if}
-							<span><strong>Name: </strong>{datos.tokenNameConf}</span>
-							<br>
-							<span><strong>Amount: </strong>{datos.tokenAmountConf} of {datos.tokenAmountConfEmit}</span> 
-							<span><strong>Decimals: </strong>{datos.tokenDecimalsConf}</span>
-							<span><strong>Type: </strong>{datos.tokenTypeConf}</span>
-							<br>
-							<span class="text-break"><strong>Description: </strong>{datos.tokenR5Conf}</span>
-							<br>
-							<span class="text-break"><strong>Transaction: </strong><a href={datos.tokenTransactionConf} target="_blank">{datos.tokenTransactionConf.substr(50)}</a></span>
-							
-							</li>
+						<div class="container" >
+							<div class="card fondoGris px-2 py-2 mb-2" >
+								<div class="row no-gutters">
+									{#if (datos.tokenR7Conf == '0e020101')}
+										<div class="col-sm-3">
+											<img class="img-thumbnail border border-light align-self-center mr-3" src={datos.tokenR9Conf} alt={datos.name}>
+										</div>
+									{:else if datos.tokenR7Conf == '0e0430313031'}
+										<center>
+											<div class="mark mt-3 py-3 {claseNoImage} align-self-center mr-3">
+												Token minted with other standards. <br>
+												<h4>Look at its Descriptions.</h4>
+											</div>
+										</center>
+									{:else if datos.tokenR7Conf == '0e020102'}
+										<div class="col-sm-3 align-self-center mr-3">
+											<span>
+												<center><audio src={resolveIpfs(toUtf8String(datos.tokenR9Conf).substr(2))} style="width: 12rem;" title={datos.name} controls></audio> </center>
+											</span>
+										</div>
+									{:else if (toUtf8String(datos.tokenR9Conf).slice(-4) == '.mp4') || (toUtf8String(datos.tokenR9Conf).slice(-4) == '.mov') || (toUtf8String(datos.tokenR9Conf).slice(-4) == '.3gp')}
+										<div class="col-sm-3">	
+											<span>
+												<video src={resolveIpfs(toUtf8String(datos.tokenR9Conf).substr(2))} controls></video>
+											</span>
+										</div>
+									{:else}
+										<div class="col-sm-3 align-self-center mr-3">
+											<center>
+												<div class="mark mt-3 py-3 {claseNoImage}">No image-audio token</div>
+											</center>
+										</div>
+									{/if}
+									
+									<div class="col-sm-8">
+										<div class="card-body text-dark">
+											<h5 class="card-title">{datos.tokenNameConf}</h5>
+											<span class="text-break small text-secondary">{datos.tokenR5Conf}</span>
+											<br>
+											<p class="card-text small bg-white px-3 py-2 mt-2 rounded">
+												<i class="bi bi-bricks"></i>
+												<span><strong>Creation Height: </strong></span><span class="text-secondary">{datos.tokenCreationHeightConf}</span>
+												<br>
+												{#if datos.tokenR7Conf == '0e020101'}
+													<i class="bi bi-file-image"></i>
+												{:else if datos.tokenR7Conf == '0e020102'}
+													<i class="bi bi-file-earmark-music"></i>
+												{:else}
+													<i class="bi bi-file-earmark-x"></i>
+												{/if}
+												<span class="text-break"><strong>Id: </strong></span><span class="text-secondary">{datos.tokenTokenIdConf}</span>
+												{#if (datos.tokenR8Conf)}
+													<br>
+													<i class="bi bi-patch-check"></i>
+													<span class="text-break"><strong>Sha256: </span><span class="text-secondary">{datos.tokenR8Conf}</span>
+												{/if}
+												<br>
+												<i class="bi bi-stack"></i>
+												<span><strong>Amount: </strong></span><span class="text-secondary">{datos.tokenAmountConf} of {datos.tokenAmountConfEmit}</span>
+												<br>
+												<i class="bi bi-file-binary"></i>
+												<span><strong>Decimals: </strong></span><span class="text-secondary">{datos.tokenDecimalsConf}</span>
+												<br>
+												<i class="bi bi-file-earmark-spreadsheet"></i>
+												<span><strong>Type: </strong></span><span class="text-secondary">{datos.tokenTypeConf}</span>
+												<br>
+												<a href="https://ergotokens.org/#/?token={datos.tokenTokenIdConf}" class="btn btn-sm btn-white text-dark border border-secondary mt-2" target="_blank">Details in ErgoTokens.org</a>
+												<a href={datos.tokenTransactionConf} class="btn btn-sm btn-white text-dark border border-secondary mt-2" target="_blank">Transaction</a>
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 						{/each}
 					{/await}
-				</ul>
-			{:else}
-				<span id="tokens">0</span>
 			{/if}
 		</li>
     </ul>
@@ -335,6 +383,9 @@
   </div>
 
 <style>
+	.fondoGris{
+		background-color: #e4e4e4;
+	}
 	
 	@media (min-width: 640px) {
 		main {
