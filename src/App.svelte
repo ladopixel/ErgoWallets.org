@@ -219,21 +219,21 @@
 		<li class="list-group-item bg-secondary text-secondary">
 			<span class="text-light small"><strong>Tokens </strong></span>
 			{#if (objetoAddress.numberTokensConf)}
-				<span id="tokens">{objetoAddress.numberTokensConf}</span>
+				<span class="text-light small" id="tokens">{objetoAddress.numberTokensConf}</span>
 					{#await loadWallet}
 						<span class="text-light">Loading...</span>
 					{:then}
 						{#each arrayTokens as datos}
-						<div class="container">
+						<div class="container" >
 							<div class="card fondoGris px-2 py-2 mb-2" >
 								<div class="row no-gutters">
 									{#if (datos.tokenR7Conf == '0e020101')}
 										<div class="col-sm-3">
-											<img class="img-thumbnail border border-light" src={datos.tokenR9Conf} alt={datos.name}>
+											<img class="img-thumbnail border border-light align-self-center mr-3" src={datos.tokenR9Conf} alt={datos.name}>
 										</div>
 									{:else if datos.tokenR7Conf == '0e0430313031'}
 										<center>
-											<div class="mark mt-3 py-3 {claseNoImage}">
+											<div class="mark mt-3 py-3 {claseNoImage} align-self-center mr-3">
 												Token minted with other standards. <br>
 												<h4>Look at its Descriptions.</h4>
 											</div>
@@ -261,7 +261,7 @@
 									<div class="col-sm-8">
 										<div class="card-body text-dark">
 											<h5 class="card-title">{datos.tokenNameConf}</h5>
-											<span class="text-break">{datos.tokenR5Conf}</span>
+											<span class="text-break small text-secondary">{datos.tokenR5Conf}</span>
 											<br>
 											<p class="card-text small bg-white px-3 py-2 mt-2 rounded">
 												<i class="bi bi-bricks"></i>
@@ -300,8 +300,6 @@
 						</div>
 						{/each}
 					{/await}
-			{:else}
-				<span id="tokens">0</span>
 			{/if}
 		</li>
     </ul>
