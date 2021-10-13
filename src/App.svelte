@@ -13,6 +13,8 @@
 	let totalErgos = 0
 	let valorIdWallet = ''
 	let claseNoImage = ' border border-secondary'
+	let metadata = ''
+	let objetoMetadata = {}
 	const loadCoin = async() => {
 		const res = await fetch(`https://api.ergoplatform.com/api/v0/info`)
 		const data = await res.json()
@@ -71,20 +73,44 @@
 					const res2 = await fetch(`https://api.ergoplatform.com/api/v0/assets/${data.tokens[i].tokenId}/issuingBox`)
 					const data2 = await res2.json()
 					if (res2.ok){
-						objetoToken = {
-							tokenCreationHeightConf: data2[0].creationHeight,
-							tokenTokenIdConf: data2[0].assets[0].tokenId,
-							tokenAmountConf: data.tokens[i].amount,
-							tokenAmountConfEmit: data2[0].assets[0].amount,
-							tokenNameConf: data2[0].assets[0].name,
-							tokenDecimalsConf: data2[0].assets[0].decimals,
-							tokenTypeConf: data2[0].assets[0].type,
-							tokenR5Conf: toUtf8String(data2[0].additionalRegisters.R5).substr(2),
-							tokenR6Conf: data2[0].additionalRegisters.R6,
-							tokenR7Conf: data2[0].additionalRegisters.R7,
-							tokenR8Conf: data2[0].additionalRegisters.R8,
-							tokenR9Conf: resolveIpfs(toUtf8String(data2[0].additionalRegisters.R9).substr(2)),
-							tokenTransactionConf: 'https://explorer.ergoplatform.com/en/transactions/' + data2[0].spentTransactionId
+						// substr(3) para que cargue correctamente el metadata
+						metadata = toUtf8String(data2[0].additionalRegisters.R5).substr(3)
+						if(isJson(metadata)){
+							objetoToken = {
+								tokenCreationHeightConf: data2[0].creationHeight,
+								tokenTokenIdConf: data2[0].assets[0].tokenId,
+								tokenAmountConf: data.tokens[i].amount,
+								tokenAmountConfEmit: data2[0].assets[0].amount,
+								tokenNameConf: data2[0].assets[0].name,
+								tokenDecimalsConf: data2[0].assets[0].decimals,
+								tokenTypeConf: data2[0].assets[0].type,
+								tokenR5Conf: '',
+								tokenMetadata: 1,
+								tokenR6Conf: data2[0].additionalRegisters.R6,
+								tokenR7Conf: data2[0].additionalRegisters.R7,
+								tokenR8Conf: data2[0].additionalRegisters.R8,
+								tokenR9Conf: resolveIpfs(toUtf8String(data2[0].additionalRegisters.R9).substr(2)),
+								tokenTransactionConf: 'https://explorer.ergoplatform.com/en/transactions/' + data2[0].spentTransactionId
+							}
+							objetoMetadata = JSON.parse(metadata)
+							visualizoMetadata(objetoMetadata)
+						}else{
+							objetoToken = {
+								tokenCreationHeightConf: data2[0].creationHeight,
+								tokenTokenIdConf: data2[0].assets[0].tokenId,
+								tokenAmountConf: data.tokens[i].amount,
+								tokenAmountConfEmit: data2[0].assets[0].amount,
+								tokenNameConf: data2[0].assets[0].name,
+								tokenDecimalsConf: data2[0].assets[0].decimals,
+								tokenTypeConf: data2[0].assets[0].type,
+								tokenR5Conf: toUtf8String(data2[0].additionalRegisters.R5).substr(2),
+								tokenMetadata: 0,
+								tokenR6Conf: data2[0].additionalRegisters.R6,
+								tokenR7Conf: data2[0].additionalRegisters.R7,
+								tokenR8Conf: data2[0].additionalRegisters.R8,
+								tokenR9Conf: resolveIpfs(toUtf8String(data2[0].additionalRegisters.R9).substr(2)),
+								tokenTransactionConf: 'https://explorer.ergoplatform.com/en/transactions/' + data2[0].spentTransactionId
+							}
 						}
 					}
 				arrayTokens[i] = objetoToken
@@ -114,7 +140,38 @@
 		
 	}
 	 
-	/////
+
+	function isJson(str) {
+		try {
+			JSON.parse(str);
+		} catch (e) {
+			return false;
+		}
+		return true;
+	}
+
+	function visualizoMetadata(obj){
+		for(var key in obj){
+			if(!obj.hasOwnProperty(key)) continue;
+				if(typeof obj[key] !== 'object') {
+					if(key == 'image'){
+						objetoToken.tokenR5Conf = objetoToken.tokenR5Conf + '<strong>' + letraMayuscula(key) + '</strong>: ' + '<a href="' + obj[key] + '">' + obj[key].substring(8, 30) + '...</a><br>'
+					}else if(!Array.isArray(obj)){
+						objetoToken.tokenR5Conf = objetoToken.tokenR5Conf + '<strong>' + letraMayuscula(key) + '</strong>: ' + obj[key] + '<br>'
+					}
+				} else {
+					visualizoMetadata(obj[key])
+				}
+				if (Array.isArray(obj[key])){
+					objetoToken.tokenR5Conf = objetoToken.tokenR5Conf + '<strong> ' + letraMayuscula(key) + ': </strong>' + obj[key] + '<br>'
+				}
+		}
+	}
+
+	function letraMayuscula(texto) {
+		return texto.charAt(0).toUpperCase() + texto.slice(1);
+	}
+
 
 	function toUtf8String(hex) {
 		if(!hex){
@@ -261,8 +318,26 @@
 									<div class="col-sm-8">
 										<div class="card-body text-dark">
 											<h5 class="card-title">{datos.tokenNameConf}</h5>
-											<span class="text-break small text-secondary">{datos.tokenR5Conf}</span>
-											<br>
+											
+											{#if datos.tokenMetadata == 1}
+												<div class="accordion-item">
+													<h2 class="accordion-header" id="flush-heading{datos.tokenTokenIdConf}">
+														<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{datos.tokenTokenIdConf}" aria-expanded="false" aria-controls="flush-collapse{datos.tokenTokenIdConf}">
+															<small>Description metadata</small>
+														</button>
+													</h2>
+													<div id="flush-collapse{datos.tokenTokenIdConf}" class="accordion-collapse collapse" aria-labelledby="flush-heading{datos.tokenTokenIdConf}" data-bs-parent="#accordionFlushExample">
+														<div class="accordion-body small text-secondary">
+															<span class="text-break small text-secondary">{@html decodeURIComponent(datos.tokenR5Conf)}</span>
+														</div>
+													</div>
+												</div>
+											{:else if datos.tokenMetadata == 0}
+												<span class="text-break small text-secondary">{datos.tokenR5Conf}</span>
+												<br>
+											{/if}
+											<!-- <span class="text-break small text-secondary">{datos.tokenR5Conf}</span> -->
+											
 											<p class="card-text small bg-white px-3 py-2 mt-2 rounded">
 												<i class="bi bi-bricks"></i>
 												<span><strong>Creation Height: </strong></span><span class="text-secondary">{datos.tokenCreationHeightConf}</span>
